@@ -161,6 +161,7 @@ set(EXAMPLES
 	triangle
 	viewportarray
 	vulkanscene
+	mgfx_01
 )
 
 buildExamples()
