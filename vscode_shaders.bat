@@ -1,3 +1,3 @@
 @echo off
 set PATH=%CD%\bin;%PATH%
-start code "%CD%\data\shaders"
+code -r "%CD%\data\shaders"
