@@ -64,8 +64,6 @@ private:
 	// Called if the window is resized and some resources have to be recreatesd
 	void windowResize();
 protected:
-	// Last frame time, measured using a high performance timer (if available)
-	float frameTimer = 1.0f;
 	// Frame counter to display fps
 	uint32_t frameCounter = 0;
 	uint32_t lastFPS = 0;
@@ -90,8 +88,6 @@ protected:
 	/** @brief Logical device, application's view of the physical device (GPU) */
 	// todo: getter? should always point to VulkanDevice->device
 	VkDevice device;
-	/** @brief Encapsulated physical and logical vulkan device */
-	vks::VulkanDevice *vulkanDevice;
 	// Handle to the device graphics queue that command buffers are submitted to
 	VkQueue queue;
 	// Depth buffer format (selected during Vulkan initialization)
@@ -127,14 +123,18 @@ protected:
 		// Text overlay submission and execution
 		VkSemaphore textOverlayComplete;
 	} semaphores;
-	// Simple texture loader
-	//vks::tools::VulkanTextureLoader *textureLoader = nullptr;
-	// Returns the base asset path (for shaders, models, textures) depending on the os
-	const std::string getAssetPath();
 public: 
 	bool prepared = false;
 	uint32_t width = 1280;
 	uint32_t height = 720;
+
+	/** @brief Last frame time measured using a high performance timer (if available) */
+	float frameTimer = 1.0f;
+	/** @brief Returns os specific base asset path (for shaders, models, textures) */
+	const std::string getAssetPath();
+
+	/** @brief Encapsulated physical and logical vulkan device */
+	vks::VulkanDevice *vulkanDevice;
 
 	/** @brief Example settings that can be changed e.g. by command line arguments */
 	struct Settings {
