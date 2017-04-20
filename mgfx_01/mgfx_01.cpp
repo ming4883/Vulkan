@@ -58,12 +58,10 @@ public:
 
 	struct {
 		vks::Buffer VS;
-		vks::Buffer GS;
 	} uniformBuffers;
 
 	struct {
 		VkPipeline solid;
-		VkPipeline normals;
 	} pipelines;
 
 	VkPipelineLayout pipelineLayout;
@@ -83,18 +81,16 @@ public:
 		// Clean up used Vulkan resources 
 		// Note : Inherited destructor cleans up resources stored in base class
 		vkDestroyPipeline(device, pipelines.solid, nullptr);
-		vkDestroyPipeline(device, pipelines.normals, nullptr);
 
 		vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
 		vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
 
 		models.object.destroy();
 
-		uniformBuffers.GS.destroy();
 		uniformBuffers.VS.destroy();
 	}
 
-	// Enable physical device features required for this example				
+	// Enable physical device features required for this example
 	virtual void getEnabledFeatures()
 	{
 		// Geometry shader support is required for this example
@@ -160,13 +156,6 @@ public:
 			// Solid shading
 			vkCmdBindPipeline(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.solid);
 			vkCmdDrawIndexed(drawCmdBuffers[i], models.object.indexCount, 1, 0, 0, 0);
-
-			// Normal debugging
-			if (displayNormals)
-			{
-				vkCmdBindPipeline(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.normals);
-				vkCmdDrawIndexed(drawCmdBuffers[i], models.object.indexCount, 1, 0, 0, 0);
-			}
 
 			vkCmdEndRenderPass(drawCmdBuffers[i]);
 
@@ -291,12 +280,6 @@ public:
 				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 				0,
 				&uniformBuffers.VS.descriptor),
-			// Binding 1 : Geometry shader ubo
-			vks::initializers::writeDescriptorSet(
-				descriptorSet,
-				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-				1,
-				&uniformBuffers.GS.descriptor)
 		};
 
 		vkUpdateDescriptorSets(device, (uint32_t)writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
@@ -379,9 +362,6 @@ public:
 		pipelineCreateInfo.pStages = shaderStages.data();
 		pipelineCreateInfo.renderPass = renderPass;
 
-		// Normal debugging pipeline
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.normals));
-
 		// Solid rendering pipeline
 		shaderStages[0] = loadShader(getAssetPath() + "shaders/mgfx_01/mesh.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
 		shaderStages[1] = loadShader(getAssetPath() + "shaders/mgfx_01/mesh.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
@@ -399,16 +379,8 @@ public:
 			&uniformBuffers.VS,
 			sizeof(uboVS)));
 
-		// Geometry shader uniform buffer block
-		VK_CHECK_RESULT(vulkanDevice->createBuffer(
-			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			&uniformBuffers.GS,
-			sizeof(uboGS)));
-
 		// Map persistent
 		VK_CHECK_RESULT(uniformBuffers.VS.map());
-		VK_CHECK_RESULT(uniformBuffers.GS.map());
 
 		updateUniformBuffers();
 	}
@@ -423,11 +395,6 @@ public:
 		uboVS.model = glm::rotate(uboVS.model, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
 		uboVS.model = glm::rotate(uboVS.model, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 		memcpy(uniformBuffers.VS.mapped, &uboVS, sizeof(uboVS));
-
-		// Geometry shader
-		uboGS.model = uboVS.model;
-		uboGS.projection = uboVS.projection;
-		memcpy(uniformBuffers.GS.mapped, &uboGS, sizeof(uboGS));
 	}
 
 	void draw()

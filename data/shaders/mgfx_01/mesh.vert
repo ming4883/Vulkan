@@ -37,6 +37,6 @@ void main()
 	outLightVec = lightPos.xyz;
 	outViewVec = -pos.xyz;
 
-	outMaterial.rgb = vec3(0.25);
-	outMaterial.a =  step(0.5, sin(inPos.x * 5) * 0.5 + 0.5);
+	outMaterial.rgb = inPos.xyz;
+	outMaterial.a = 0.25;
 }

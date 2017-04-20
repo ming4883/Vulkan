@@ -69,7 +69,13 @@ void main()
 	light.pos = inLightVec;
 	light.color = vec3(1.0, 1.0, 1.0);
 
-	vec3 pbr = computePBRLighting(light, P, N, V, vec3(1.0, 0.5, 0.5), inMaterial.a, inMaterial.rgb);
+	float roughness = smoothstep(0.4, 0.6, abs(sin(inMaterial.x * 5))) + 0.1;
+	float f0 = smoothstep(0.0, 0.1, inMaterial.y) * 0.875 + 0.125;
+
+	roughness = clamp(roughness, 0.0, 1.0);
+	f0 = clamp(f0, 0.0, 1.0);
+
+	vec3 pbr = computePBRLighting(light, P, N, V, vec3(1.0, 0.25, 0.25), roughness, vec3(f0));
 
 	outFragColor = vec4((ambient + pbr) * inColor, 1.0);
 }
