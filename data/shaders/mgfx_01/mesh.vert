@@ -17,6 +17,7 @@ layout (location = 0) out vec3 outNormal;
 layout (location = 1) out vec3 outColor;
 layout (location = 2) out vec3 outViewVec;
 layout (location = 3) out vec3 outLightVec;
+layout (location = 4) out vec4 outMaterial;
 
 out gl_PerVertex
 {
@@ -33,6 +34,9 @@ void main()
 	outNormal = mat3(ubo.model) * inNormal;
 
 	vec3 lightPos = vec3(1.0f, -1.0f, 1.0f);
-	outLightVec = lightPos.xyz - pos.xyz;
-	outViewVec = -pos.xyz;		
+	outLightVec = lightPos.xyz;
+	outViewVec = -pos.xyz;
+
+	outMaterial.rgb = vec3(0.25);
+	outMaterial.a =  step(0.5, sin(inPos.x * 5) * 0.5 + 0.5);
 }
