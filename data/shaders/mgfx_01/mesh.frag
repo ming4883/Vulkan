@@ -20,7 +20,7 @@ float G1V ( float dotNV, float k ) {
 	return 1.0 / (dotNV*(1.0 - k) + k);
 }
 
-vec3 computePBRLighting ( in Light light, in vec3 position, in vec3 N, in vec3 V, in vec3 albedo, in float roughness, in vec3 F0 ) {
+vec3 computePBRLighting ( in Light light, in vec3 position, in vec3 N, in vec3 V, in vec3 albedo, in float roughness, in float metallic, in vec3 F0 ) {
 
 	float alpha = roughness*roughness;
 	vec3 L = normalize(light.pos.xyz - position);
@@ -30,7 +30,7 @@ vec3 computePBRLighting ( in Light light, in vec3 position, in vec3 N, in vec3 V
 	float dotNV = clamp (dot (N, V), 0.0, 1.0);
 	float dotNH = clamp (dot (N, H), 0.0, 1.0);
 	float dotLH = clamp (dot (L, H), 0.0, 1.0);
-	float dotVH = clamp (dot (V, H), 0.0, 1.0);
+	//float dotVH = clamp (dot (V, H), 0.0, 1.0);
 
 	float D, vis;
 	vec3 F;
@@ -53,11 +53,12 @@ vec3 computePBRLighting ( in Light light, in vec3 position, in vec3 N, in vec3 V
 	vec3 specular = /*dotNL **/ D * F * vis;
 
 	float invPi = 0.31830988618;
+	
 	vec3 diffuse = (albedo * invPi);
+	diffuse *= (1 - F);
+	diffuse *= 1 - metallic;
 
-	vec3 kD = (1 - F);
-
-	return (diffuse * kD + specular) * light.color.xyz * dotNL;
+	return (diffuse + specular) * light.color.xyz * dotNL;
 }
 
 
@@ -75,14 +76,13 @@ void main()
 	float roughness = smoothstep(0.4, 0.6, abs(sin(inMaterial.y * 2.5)));
 	float metallic = smoothstep(0.0, 0.1, inMaterial.x);
 
-	roughness = clamp(roughness, 0.1, 0.9);
-	metallic = clamp(metallic, 0.1, 0.9);
+	roughness = clamp(roughness, 0.125, 1.0);
+	metallic = clamp(metallic, 0.0, 1.0);
 
-	vec3 albedo = vec3(1.0, 0.880, 0.605);
-	vec3 f0 = albedo * albedo * (1 - metallic) + vec3(0.04) * metallic;
-	f0 = clamp(f0, vec3(0.0), vec3(1.0));
+	vec3 albedo = pow(vec3(1.0, 0.880, 0.605), vec3(1.5));
+	vec3 f0 = mix(vec3(0.04), albedo, metallic);
 
-	vec3 pbr = computePBRLighting(light, P, N, V, albedo, roughness, f0);
+	vec3 pbr = computePBRLighting(light, P, N, V, albedo, roughness, metallic, f0);
 
 	outFragColor = vec4((ambient + pbr) * inColor, 1.0);
 }
