@@ -227,7 +227,6 @@ public:
 		vks::tools::setImageLayout(
 			layoutCmd,
 			shadowCubeMap.image,
-			VK_IMAGE_ASPECT_COLOR_BIT,
 			VK_IMAGE_LAYOUT_UNDEFINED,
 			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 			subresourceRange);
@@ -243,7 +242,7 @@ public:
 		sampler.addressModeV = sampler.addressModeU;
 		sampler.addressModeW = sampler.addressModeU;
 		sampler.mipLodBias = 0.0f;
-		sampler.maxAnisotropy = 0;
+		sampler.maxAnisotropy = 1.0f;
 		sampler.compareOp = VK_COMPARE_OP_NEVER;
 		sampler.minLod = 0.0f;
 		sampler.maxLod = 1.0f;
@@ -520,7 +519,6 @@ public:
 		vks::tools::setImageLayout(
 			offscreenPass.commandBuffer,
 			shadowCubeMap.image,
-			VK_IMAGE_ASPECT_COLOR_BIT,
 			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 			subresourceRange);
@@ -534,7 +532,6 @@ public:
 		vks::tools::setImageLayout(
 			offscreenPass.commandBuffer,
 			shadowCubeMap.image,
-			VK_IMAGE_ASPECT_COLOR_BIT,
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 			subresourceRange);

@@ -21,6 +21,8 @@
 #include "VulkanAndroid.h"
 #elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
 #include <wayland-client.h>
+#elif defined(_DIRECT2DISPLAY)
+//
 #elif defined(__linux__)
 #include <xcb/xcb.h>
 #endif
@@ -207,6 +209,8 @@ public:
 	int64_t lastTapTime = 0;
 	/** @brief Product model and manufacturer of the Android device (via android.Product*) */
 	std::string androidProduct;
+#elif (defined(VK_USE_PLATFORM_IOS_MVK) || defined(VK_USE_PLATFORM_MACOS_MVK))
+    void* view;
 #elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
 	wl_display *display = nullptr;
 	wl_registry *registry = nullptr;
@@ -223,6 +227,8 @@ public:
 		bool right = false;
 		bool middle = false;
 	} mouseButtons;
+#elif defined(_DIRECT2DISPLAY)
+	bool quit = false;
 #elif defined(__linux__)
 	struct {
 		bool left = false;
@@ -240,7 +246,7 @@ public:
 	VulkanExampleBase(bool enableValidation);
 
 	// dtor
-	~VulkanExampleBase();
+	virtual ~VulkanExampleBase();
 
 	// Setup the vulkan instance, enable required extensions and connect to the physical device (GPU)
 	void initVulkan();
@@ -252,6 +258,8 @@ public:
 #elif defined(__ANDROID__)
 	static int32_t handleAppInput(struct android_app* app, AInputEvent* event);
 	static void handleAppCommand(android_app* app, int32_t cmd);
+#elif (defined(VK_USE_PLATFORM_IOS_MVK) || defined(VK_USE_PLATFORM_MACOS_MVK))
+    void* setupWindow(void* view);
 #elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
 	wl_shell_surface *setupWindow();
 	void initWaylandConnection();
@@ -294,6 +302,8 @@ public:
 			uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched,
 			uint32_t mods_locked, uint32_t group);
 
+#elif defined(_DIRECT2DISPLAY)
+//
 #elif defined(__linux__)
 	xcb_window_t setupWindow();
 	void initxcbConnection();
@@ -313,8 +323,8 @@ public:
 	// Containing view dependant matrices
 	virtual void viewChanged();
 	// Called if a key is pressed
-	// Can be overriden in derived class to do custom key handling
-	virtual void keyPressed(uint32_t keyCode);
+	/** @brief (Virtual) Called after a key was pressed, can be used to do custom key handling */
+	virtual void keyPressed(uint32_t);
 	// Called when the window has been resized
 	// Can be overriden in derived class to recreate or rebuild resources attached to the frame buffer / swapchain
 	virtual void windowResized();
@@ -334,7 +344,7 @@ public:
 	// Can be overriden in derived class to setup a custom render pass (e.g. for MSAA)
 	virtual void setupRenderPass();
 
-	/** @brief (Virtual) called after the physical device features have been read, used to set features to enable on the device */
+	/** @brief (Virtual) Called after the physical device features have been read, can be used to set features to enable on the device */
 	virtual void getEnabledFeatures();
 
 	// Connect and prepare the swap chain
@@ -369,11 +379,13 @@ public:
 	// Start the main render loop
 	void renderLoop();
 
+    // Render one frame of a render loop on platforms that sync rendering
+    void renderFrame();
+
 	void updateTextOverlay();
 
-	// Called when the text overlay is updating
-	// Can be overriden in derived class to add custom text to the overlay
-	virtual void getOverlayText(VulkanTextOverlay * textOverlay);
+	/** @brief (Virtual) Called when the text overlay is updating, can be used to add custom text to the overlay */
+	virtual void getOverlayText(VulkanTextOverlay*);
 
 	// Prepare the frame for workload submission
 	// - Acquires the next image from the swap chain 
@@ -399,9 +411,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)				
 	}																								\
 	return (DefWindowProc(hWnd, uMsg, wParam, lParam));												\
 }																									\
-int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nCmdShow)	\
+int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int)									\
 {																									\
-	for (size_t i = 0; i < __argc; i++) { VulkanExample::args.push_back(__argv[i]); };  			\
+	for (int32_t i = 0; i < __argc; i++) { VulkanExample::args.push_back(__argv[i]); };  			\
 	vulkanExample = new VulkanExample();															\
 	vulkanExample->initVulkan();																	\
 	vulkanExample->setupWindow(hInstance, WndProc);													\
@@ -484,4 +496,6 @@ int main(const int argc, const char *argv[])													    \
 	delete(vulkanExample);																			\
 	return 0;																						\
 }
+#elif (defined(VK_USE_PLATFORM_IOS_MVK) || defined(VK_USE_PLATFORM_MACOS_MVK))
+#define VULKAN_EXAMPLE_MAIN()
 #endif

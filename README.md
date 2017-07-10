@@ -33,6 +33,14 @@ Note that you need [assimp](https://github.com/assimp/assimp) in order to compil
 
 Building on Android is done using the [Android NDK](http://developer.android.com/tools/sdk/ndk/index.html) and requires a device that supports Vulkan. Please see the [Android readme](./android/README.md) on how to build and deploy the examples.
 
+## <img src="./images/applelogo.png" alt="" height="32px"> [iOS and macOS](xcode/)
+
+Building for *iOS* and *macOS* is done using the [examples](xcode/examples.xcodeproj) *Xcode* project found in the [xcode](xcode) directory. These examples use the [**MoltenVK**](https://moltengl.com/moltenvk) Vulkan driver to provide Vulkan support on *iOS* and *macOS*, and require an *iOS* or *macOS* device that supports *Metal*. Please see the [MoltenVK Examples readme](xcode/README_MoltenVK_Examples.md) for more info on acquiring **MoltenVK** and building and deploying the examples on *iOS* and *macOS*.
+
+## Additional asset pack
+
+**Note:** Binary assets (textures, models) will no longer be added directly to the repository to keep it's size down, so newer examples will require the download of an [additional asset pack](data/README.md).
+
 ## Precompiled binaries
 
 Precompiled binaries for Windows (x64), Linux (x64) and Android can be [found here](http://vulkan.gpuinfo.org/examples.php). Note that these may not always be up-to-date with the repository.
@@ -53,7 +61,7 @@ This example is far more explicit than the other examples and is meant to be a s
 ### [Pipelines](pipelines/)
 <img src="./screenshots/basic_pipelines.png" height="72px" align="right">
 
-[Pipeline state objects](https://www.khronos.org/registry/vulkan/specs/1.0/xhtml/vkspec.html#pipelines) replace the biggest part of the dynamic state machine from OpenGL, baking state information for culling, blending, rasterization, etc. and shaders into a fixed stat that can be optimized much easier by the implementation.
+[Pipeline state objects](https://www.khronos.org/registry/vulkan/specs/1.0/xhtml/vkspec.html#pipelines) replace the biggest part of the dynamic state machine from OpenGL, baking state information for culling, blending, rasterization, etc. and shaders into a fixed state that can be optimized much easier by the implementation.
 
 This example uses three different PSOs for rendering the same scene with different visuals and shaders and also demonstrates the use of [pipeline derivatives](https://www.khronos.org/registry/vulkan/specs/1.0/xhtml/vkspec.html#pipelines-pipeline-derivatives).
 
@@ -85,7 +93,7 @@ Uses [assimp](https://github.com/assimp/assimp) to load a mesh from a common 3D 
 ### [Dynamic uniform buffers](dynamicuniformbuffer/) :speech_balloon:
 <img src="./screenshots/dynamicuniformbuffer.jpg" height="72px" align="right">
 
-Demonstrates the use of dynamic uniform buffers for rendering multiple objects with different matrices from one big uniform buffer object. Sets up one bug uniform buffer that contains multiple model matrices that are dynamically addressed upon decriptor binding time.
+Demonstrates the use of dynamic uniform buffers for rendering multiple objects with different matrices from one big uniform buffer object. Sets up one big uniform buffer that contains multiple model matrices that are dynamically addressed upon descriptor binding time.
 
 This minimizes the number of descriptor sets required and may help in optimizing memory writes by e.g. only doing partial updates to that memory.
 
@@ -149,7 +157,7 @@ Uses instancing for rendering multiple instances of the same mesh using differen
 ### [Indirect drawing](indirectdraw/) :speech_balloon:
 <img src="./screenshots/indirectdraw.jpg" height="72px" align="right">
 
-This example renders thousands of instanced objects with different geometries using only one single indirect draw call (if ```multiDrawIndirect``` is supported). Unlike direct drawing function, indirect drawing functions take their draw commands from a buffer object containing information like index cound, index offset and number of instances to draw.
+This example renders thousands of instanced objects with different geometries using only one single indirect draw call (if ```multiDrawIndirect``` is supported). Unlike direct drawing function, indirect drawing functions take their draw commands from a buffer object containing information like index count, index offset and number of instances to draw.
 
 Shows how to generate and render such an indirect draw command buffer that is staged to the device. Indirect draw buffers are the base for generating and updating draw commands on the GPU using shaders.
 
@@ -180,7 +188,7 @@ Demonstrates the use of resolve attachments for doing multisampling. Instead of 
 
 Dynamic shadows from a ```directional light source``` in two passes. The first pass renders the scene depth from the light's point-of-view into a separate framebuffer attachment with a different (higher) resolution.
 
-The second pass renders the scene from the camera's point-of-view and compares the depth value of the texels with the one stored in the offscreen depth attachment (which the shader directly samples from) to determine whether a texel is shadowed or not and then applies a PCF filter to smooth out shadow borders. To avoid shadow artifacts the dynamic depth bias state ([vkCmdSetDepthBias](https://www.khronos.org/registry/vulkan/specs/1.0/man/html/vkCmdSetDepthBias.html)) is used to apply a constant and slope dept bias factor.
+The second pass renders the scene from the camera's point-of-view and compares the depth value of the texels with the one stored in the offscreen depth attachment (which the shader directly samples from) to determine whether a texel is shadowed or not and then applies a PCF filter to smooth out shadow borders. To avoid shadow artefacts the dynamic depth bias state ([vkCmdSetDepthBias](https://www.khronos.org/registry/vulkan/specs/1.0/man/html/vkCmdSetDepthBias.html)) is used to apply a constant and slope depth bias factor.
 
 ### [Omnidirectional shadow mapping](shadowmappingomni/)
 <img src="./screenshots/shadow_omnidirectional.png" height="72px" align="right">
@@ -197,7 +205,7 @@ This example loads and displays a rigged COLLADA model including animations. Bon
 ### [Bloom](bloom/)
 <img src="./screenshots/bloom.jpg" height="72px" align="right">
 
-Advanced fullscreen shader example implementing a separated gaussian blur using two passes. The glowing parts of the scene are rendered to a low-resoluation offscreen framebuffer that is blurred in two steps and then blended on top of the scene.
+Advanced fullscreen shader example implementing a separated gaussian blur using two passes. The glowing parts of the scene are rendered to a low-resolution offscreen framebuffer that is blurred in two steps and then blended on top of the scene.
 
 ## Deferred
 
@@ -215,7 +223,7 @@ Deferred shading collects all values (color, normal, position) into different re
 
 Building on the deferred shading setup this example adds directional shadows using shadow maps from multiple spotlights.
 
-Scene depth from the different light's point-of-view is renderer to a layered depth attachment using only one pass. This is done using multiple geometry shader invocations that allows to output multiple instances of the same geoemtry using different matrices into the layers of the depth attachment.
+Scene depth from the different light's point-of-view is renderer to a layered depth attachment using only one pass. This is done using multiple geometry shader invocations that allows to output multiple instances of the same geometry using different matrices into the layers of the depth attachment.
 
 The final scene compositing pass then samples from the layered depth map to determine if a fragment is shadowed or not.
 
@@ -223,6 +231,25 @@ The final scene compositing pass then samples from the layered depth map to dete
 <img src="./screenshots/ssao.jpg" height="72px" align="right">
 
 Implements ambient occlusion in screen space, adding depth with the help of ambient occlusion to a scene. The example is using a deferred shading setup with the AO pass using the depth information from the deferred G-Buffer to generate the ambient occlusion values. A second pass is then applied to blur the AO results before they're applied to the scene in the final composition pass.
+
+## Physically based rendering
+
+*Physical based rendering as a lighting technique that achieves a more realistic and dynamic look by applying approximations of bidirectional reflectance distribution functions that rely on measured real-world material parameters and environment lighting.*
+
+### [Physical shading basics](pbrbasic/)
+<img src="./screenshots/pbrbasic.jpg" height="72px" align="right">
+
+Basic implementation of a metallic-roughness based physical based rendering model using measured material parameters. Implements a specular BRDF based on material parameters for metallic reflectance, surface roughness and color and displays a grid of objects with varying metallic and roughness parameters light by multiple fixed light sources.
+
+### [Physical shading with image based lighting](pbribl/)
+<img src="./screenshots/pbribl.jpg" height="72px" align="right">
+
+Adds ```image based lighting``` to the PBR equation. IBL uses the surrounding environment as a single light source. This adds an even more realistic look the models as the light contribution used by the materials is now controlled by the environment. The sample uses a fixed HDR environment cubemap as for lighting and reflectance. The new textures and cubemaps required for the enhanced lighting (BRDF 2D-LUT, irradiance cube and a filtered cube based on roughness) are generated at run-time based on that cubemap.
+
+### [Physical shading with textures and image based lighting](pbrtexture/)
+<img src="./screenshots/pbrtexture.jpg" height="72px" align="right">
+
+This example adds a textured model with materials especially created for the metallic-roughness PBR workflow. Where the other examples used fixed material parameters for the PBR equation (metallic, roughness, albedo), this model contains texture maps that store these values (plus a normal and ambient occlusion map) used as input parameters for the BRDF shader. So even though the model uses only one material there are differing roughness and metallic areas and combined with image based lighting based on the environment the model is rendered with a realistic look.
 
 ## Compute
 
@@ -340,6 +367,7 @@ Please note that (some) models and textures use separate licenses. Please comply
 - Hidden treasure scene used in pipeline and debug marker examples by [Laurynas Jurgila](http://www.blendswap.com/user/PigArt)
 - Sibenik Cathedral model by Marko Dabrovic, using updated version by [Kenzie Lamar and Morgan McGuire](http://graphics.cs.williams.edu/data/meshes.xml)
 - Textures used in some examples by [Hugues Muller](http://www.yughues-folio.com)
+- Cerberus gun model used in PBR sample by [Andrew Maximov](http://artisaverb.info/Cerberus.html)
 - Updated compute particle system shader by [Lukas Bergdoll](https://github.com/Voultapher)
 - Vulkan scene model (and derived models) by [Dominic Agoro-Ombaka](http://www.agorodesign.com/) and [Sascha Willems](http://www.saschawillems.de)
 - Vulkan and the Vulkan logo are trademarks of the [Khronos Group Inc.](http://www.khronos.org)
