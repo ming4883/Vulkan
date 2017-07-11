@@ -1,7 +1,6 @@
-#version 440
-
-#extension GL_ARB_separate_shader_objects : enable
-#extension GL_ARB_shading_language_420pack : enable
+#version 310 es
+precision highp float;
+precision highp int;
 
 layout (location = 0) in vec3 inNormal;
 layout (location = 1) in vec3 inColor;
@@ -55,8 +54,8 @@ vec3 computePBRLighting ( in Light light, in vec3 position, in vec3 N, in vec3 V
 	float invPi = 0.31830988618;
 	
 	vec3 diffuse = (albedo * invPi);
-	diffuse *= (1 - F);
-	diffuse *= 1 - metallic;
+	diffuse *= (1.0 - F);
+	diffuse *= 1.0 - metallic;
 
 	return (diffuse + specular) * light.color.xyz * dotNL;
 }

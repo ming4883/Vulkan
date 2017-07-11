@@ -52,16 +52,11 @@ public:
 	} uboVS;
 
 	struct {
-		glm::mat4 projection;
-		glm::mat4 model;
-	} uboGS;
-
-	struct {
 		vks::Buffer VS;
 	} uniformBuffers;
 
 	struct {
-		VkPipeline solid;
+		VkPipeline ggx;
 	} pipelines;
 
 	VkPipelineLayout pipelineLayout;
@@ -73,14 +68,14 @@ public:
 		zoom = -8.0f;
 		rotation = glm::vec3(0.0f, -25.0f, 0.0f);
 		enableTextOverlay = true;
-		title = "MGFX - 01";
+		title = "MGFX - 01 - PBR";
 	}
 
 	~VulkanExample()
 	{
 		// Clean up used Vulkan resources 
 		// Note : Inherited destructor cleans up resources stored in base class
-		vkDestroyPipeline(device, pipelines.solid, nullptr);
+		vkDestroyPipeline(device, pipelines.ggx, nullptr);
 
 		vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
 		vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
@@ -93,13 +88,6 @@ public:
 	// Enable physical device features required for this example
 	virtual void getEnabledFeatures()
 	{
-		// Geometry shader support is required for this example
-		if (deviceFeatures.geometryShader) {
-			enabledFeatures.geometryShader = VK_TRUE;
-		}
-		else {
-			vks::tools::exitFatal("Selected GPU does not support geometry shaders!", "Feature not supported");
-		}
 	}
 
 	void reBuildCommandBuffers()
@@ -154,7 +142,7 @@ public:
 			vkCmdBindIndexBuffer(drawCmdBuffers[i], models.object.indices.buffer, 0, VK_INDEX_TYPE_UINT32);
 
 			// Solid shading
-			vkCmdBindPipeline(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.solid);
+			vkCmdBindPipeline(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.ggx);
 			vkCmdDrawIndexed(drawCmdBuffers[i], models.object.indexCount, 1, 0, 0, 0);
 
 			vkCmdEndRenderPass(drawCmdBuffers[i]);
@@ -165,7 +153,7 @@ public:
 
 	void loadAssets()
 	{
-		models.object.loadFromFile(getAssetPath() + "models/suzanne.obj", vertexLayout, 0.25f, vulkanDevice, queue);
+		models.object.loadFromFile(getAssetPath() + "models/armor/armor.dae", vertexLayout, 1.0f, vulkanDevice, queue);
 	}
 
 	void setupVertexDescriptions()
@@ -338,11 +326,7 @@ public:
 
 		// Tessellation pipeline
 		// Load shaders
-		std::array<VkPipelineShaderStageCreateInfo, 3> shaderStages;
-
-		shaderStages[0] = loadShader(getAssetPath() + "shaders/mgfx_01/base.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
-		shaderStages[1] = loadShader(getAssetPath() + "shaders/mgfx_01/base.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
-		shaderStages[2] = loadShader(getAssetPath() + "shaders/mgfx_01/normaldebug.geom.spv", VK_SHADER_STAGE_GEOMETRY_BIT);
+		std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages;
 
 		VkGraphicsPipelineCreateInfo pipelineCreateInfo =
 			vks::initializers::pipelineCreateInfo(
@@ -363,10 +347,10 @@ public:
 		pipelineCreateInfo.renderPass = renderPass;
 
 		// Solid rendering pipeline
-		shaderStages[0] = loadShader(getAssetPath() + "shaders/mgfx_01/mesh.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
-		shaderStages[1] = loadShader(getAssetPath() + "shaders/mgfx_01/mesh.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
+		shaderStages[0] = loadShader(getAssetPath() + "shaders/mgfx_01_pbr/mesh.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
+		shaderStages[1] = loadShader(getAssetPath() + "shaders/mgfx_01_pbr/mesh.ggx.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
 		pipelineCreateInfo.stageCount = 2;
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.solid));
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.ggx));
 	}
 
 	// Prepare and initialize uniform buffer containing shader uniforms
@@ -458,9 +442,9 @@ public:
 	virtual void getOverlayText(VulkanTextOverlay *textOverlay)
 	{
 #if defined(__ANDROID__)
-		textOverlay->addText("Press \"Button A\" to toggle normals", 5.0f, 85.0f, VulkanTextOverlay::alignLeft);
+		textOverlay->addText("Press \"Button A\" to toggle shaders", 5.0f, 85.0f, VulkanTextOverlay::alignLeft);
 #else
-		textOverlay->addText("Press \"n\" to toggle normals", 5.0f, 85.0f, VulkanTextOverlay::alignLeft);
+		textOverlay->addText("Press \"n\" to toggle shaders", 5.0f, 85.0f, VulkanTextOverlay::alignLeft);
 #endif	
 	}
 };
